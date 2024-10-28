@@ -1,0 +1,534 @@
+1. Database Schema Design:
+o Design a database schema for an e-commerce platform that tracks customers, products,
+orders, and payments. What tables would you create, and what attributes would each
+table have?
+o How would you implement relationships between customers, orders, and products
+using foreign keys in MySQL?
+
+A:+----------------------+
+| Tables_in_e_commerce |
++----------------------+
+| customers            |
+| order_items          |
+| orders               |
+| payments             |
+| products             |
+ desc customers;
+
++-------------+-------------+------+-----+---------+----------------+
+| Field       | Type        | Null | Key | Default | Extra          |
++-------------+-------------+------+-----+---------+----------------+
+| customer_id | int         | NO   | PRI | NULL    | auto_increment |
+| Name        | varchar(30) | YES  |     | NULL    |                |
+| email       | varchar(40) | YES  |     | NULL    |                |
+| address     | varchar(40) | YES  |     | NULL    |                |
++-------------+-------------+------+-----+---------+----------------+
+
+mysql>  desc  order_items;
++---------------+---------------+------+-----+---------+----------------+
+| Field         | Type          | Null | Key | Default | Extra          |
++---------------+---------------+------+-----+---------+----------------+
+| order_item_id | int           | NO   | PRI | NULL    | auto_increment |
+| order_id      | int           | YES  | MUL | NULL    |                |
+| product_id    | int           | YES  | MUL | NULL    |                |
+| quantity      | int           | NO   |     | NULL    |                |
+| price         | decimal(10,2) | NO   |     | NULL    |                |
++---------------+---------------+------+-----+---------+----------------+
+mysql> desc payments;
++----------------+----------------------------------------------+------+-----+-------------------+-------------------+
+| Field          | Type                                         | Null | Key | Default           | Extra             |
++----------------+----------------------------------------------+------+-----+-------------------+-------------------+
+| payment_id     | int                                          | NO   | PRI | NULL              | auto_increment    |
+| order_id       | int                                          | YES  | MUL | NULL              |                   |
+| payment_date   | timestamp                                    | YES  |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
+| amount         | decimal(10,2)                                | NO   |     | NULL              |                   |
+| payment_method | enum('Credit Card','PayPal','Bank Transfer') | NO   |     | NULL              |                   |
+| status         | enum('Pending','Completed','Failed')         | YES  |     | Pending           |                   |
++----------------+----------------------------------------------+------+-----+-------------------+-------------------+
+mysql> desc products;
++--------------+---------------+------+-----+---------+----------------+
+| Field        | Type          | Null | Key | Default | Extra          |
++--------------+---------------+------+-----+---------+----------------+
+| product_id   | int           | NO   | PRI | NULL    | auto_increment |
+| product_name | varchar(30)   | YES  |     | NULL    |                |
+| price        | decimal(10,2) | YES  |     | NULL    |                |
+| stock        | int           | YES  |     | NULL    |                |
++--------------+---------------+------+-----+---------+----------------+
+
+
+2.  Data Definition Language (DDL):
+o Write DDL statements to create the following tables: Customers, Products, Orders,
+Order_Items, and Payments.
+o How would you ensure that customer emails are unique in the Customers table?
+o What constraints would you add to ensure data integrity for foreign key relationships
+between tables (e.g., between Orders and Customers, Order_Items and Orders)?
+create database DDLStatments;
+use DDLStatments;
+CREATE TABLE Customers (
+    customer_id INT PRIMARY KEY AUTO_INCREMENT,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,  -- Ensures unique emails
+    phone VARCHAR(20),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE Products (
+    product_id INT PRIMARY KEY AUTO_INCREMENT,
+    product_name VARCHAR(100) NOT NULL,
+    description TEXT,
+    price DECIMAL(10, 2) NOT NULL,
+    stock_quantity INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE Orders (
+    order_id INT PRIMARY KEY AUTO_INCREMENT,
+    customer_id INT,
+    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(20) NOT NULL,
+    FOREIGN KEY (customer_id) REFERENCES Customers(customer_id) ON DELETE CASCADE
+);
+CREATE TABLE Order_Items (
+    order_item_id INT PRIMARY KEY AUTO_INCREMENT,
+    order_id INT,
+    product_id INT,
+    quantity INT NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES Orders(order_id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES Products(product_id) ON DELETE CASCADE
+);
+CREATE TABLE Payments (
+    payment_id INT PRIMARY KEY AUTO_INCREMENT,
+    order_id INT,
+    payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    amount DECIMAL(10, 2) NOT NULL,
+    payment_method VARCHAR(50),
+    FOREIGN KEY (order_id) REFERENCES Orders(order_id) ON DELETE CASCADE
+);
+Tables:
++------------------------+
+| Tables_in_ddlstatments |
++------------------------+
+| customers              |
+| order_items            |
+| orders                 |
+| payments               |
+| products               |
++------------------------
++-------------+--------------+------+-----+-------------------+-------------------+
+| Field       | Type         | Null | Key | Default           | Extra             |
++-------------+--------------+------+-----+-------------------+-------------------+
+| customer_id | int          | NO   | PRI | NULL              | auto_increment    |
+| first_name  | varchar(50)  | NO   |     | NULL              |                   |
+| last_name   | varchar(50)  | NO   |     | NULL              |                   |
+| email       | varchar(100) | NO   | UNI | NULL              |                   |
+| phone       | varchar(20)  | YES  |     | NULL              |                   |
+| created_at  | timestamp    | YES  |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
++-------------+--------------+------+-----+-------------------+-------------------+
+mysql> desc order_items;
++---------------+---------------+------+-----+---------+----------------+
+| Field         | Type          | Null | Key | Default | Extra          |
++---------------+---------------+------+-----+---------+----------------+
+| order_item_id | int           | NO   | PRI | NULL    | auto_increment |
+| order_id      | int           | YES  | MUL | NULL    |                |
+| product_id    | int           | YES  | MUL | NULL    |                |
+| quantity      | int           | NO   |     | NULL    |                |
+| price         | decimal(10,2) | NO   |     | NULL    |                |
++---------------+---------------+------+-----+---------+----------------+
+mysql> desc orders;
++-------------+-------------+------+-----+-------------------+-------------------+
+| Field       | Type        | Null | Key | Default           | Extra             |
++-------------+-------------+------+-----+-------------------+-------------------+
+| order_id    | int         | NO   | PRI | NULL              | auto_increment    |
+| customer_id | int         | YES  | MUL | NULL              |                   |
+| order_date  | timestamp   | YES  |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
+| status      | varchar(20) | NO   |     | NULL              |                   |
++-------------+-------------+------+-----+-------------------+-------------------+
+mysql> desc payments;
++----------------+---------------+------+-----+-------------------+-------------------+
+| Field          | Type          | Null | Key | Default           | Extra             |
++----------------+---------------+------+-----+-------------------+-------------------+
+| payment_id     | int           | NO   | PRI | NULL              | auto_increment    |
+| order_id       | int           | YES  | MUL | NULL              |                   |
+| payment_date   | timestamp     | YES  |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
+| amount         | decimal(10,2) | NO   |     | NULL              |                   |
+| payment_method | varchar(50)   | YES  |     | NULL              |                   |
++----------------+---------------+------+-----+-------------------+-------------------+
+mysql> desc products;
++----------------+---------------+------+-----+-------------------+-------------------+
+| Field          | Type          | Null | Key | Default           | Extra             |
++----------------+---------------+------+-----+-------------------+-------------------+
+| product_id     | int           | NO   | PRI | NULL              | auto_increment    |
+| product_name   | varchar(100)  | NO   |     | NULL              |                   |
+| description    | text          | YES  |     | NULL              |                   |
+| price          | decimal(10,2) | NO   |     | NULL              |                   |
+| stock_quantity | int           | NO   |     | NULL              |                   |
+| created_at     | timestamp     | YES  |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
+
+					
+
+3.Data Manipulation Language (DML):
+o Write DML queries to insert sample data into the Customers and Products tables.
+o How would you add an order in the Orders table and its associated products in the
+Order_Items table using DML?
+o Write a DML query to update the stock of a product after an order has been placed.
+
+
+ create database assigment3;
+use assigment3
+ create table Customers(Customer_Id int,Name varchar(30),Email varchar(30));
+insert into Customers values(101,'vishnu','vishnu12@gamil.com');
+mysql> insert into Customers values(102,'aravind','aravind12@gamil.com');
+mysql> select * from Customers;
+
++-------------+---------+---------------------+
+| Customer_Id | Name    | Email               |
++-------------+---------+---------------------+
+|         101 | vishnu  | vishnu12@gamil.com  |
+|         102 | aravind | aravind12@gamil.com |
++-------------+---------+---------------------+
+
+
+ create table orders(order_Id int, Customer_Id int,Orderdate date());
+ insert into orders values(100,121,CURRENT_DATE);
+ insert into orders values(101,122,CURRENT_DATE);
++----------+-------------+------------+
+| order_Id | Customer_Id | Orderdate  |
++----------+-------------+------------+
+|      100 |         121 | 2024-10-02 |
+|      101 |         122 | 2024-10-02 |
++----------+-------------+------------+
+
+create table products(product_Id int,product_name varchar(30),price int,stock int);
+insert into table  products values(212,'ipone',100000,10);
+insert into products values(213,'vivo',30000,20);
+
+update products set stock =stock-case when product_Id=212 then 212 when product_Id= 213 then 213 else 0 END WHERE Product_ID IN (212, 213);
+
+mysql> select * from  products;
++------------+--------------+--------+-------+
+| product_Id | product_name | price  | stock |
++------------+--------------+--------+-------+
+|        212 | ipone        | 100000 |  -202 |
+|        213 | vivo         |  30000 |  -193 |
++------------+--------------+--------+-------+
+
+
+4. Queries and Reporting:
+o Write a SQL query to retrieve all orders placed by a specific customer, including the
+details of the products in each order.
+o How would you generate a report that shows the total revenue generated from all
+orders?
+o Write a query to find the most purchased products on the platform.
+SELECT 
+    o.OrderID,
+    o.OrderDate,
+    o.TotalAmount,
+    o.Status,
+    c.FirstName,
+    c.LastName,
+    p.ProductName,
+    oi.Quantity,
+    oi.Quantity * p.Price AS TotalPrice
+FROM 
+    Orders o
+JOIN 
+    Customers c ON o.CustomerID = c.CustomerID
+JOIN 
+    Order_Items oi ON o.OrderID = oi.OrderID
+JOIN 
+    Products p ON oi.ProductID = p.ProductID
+WHERE 
+    c.CustomerID = ?;  -- Replace ? with the specific CustomerID
+
+SELECT 
+    SUM(TotalAmount) AS TotalRevenue
+FROM 
+    Orders;
+SELECT 
+    p.ProductID,
+    p.ProductName,
+    SUM(oi.Quantity) AS TotalPurchased
+FROM 
+    Order_Items oi
+JOIN 
+    Products p ON oi.ProductID = p.ProductID
+GROUP BY 
+    p.ProductID, p.ProductName
+ORDER BY 
+    TotalPurchased DESC
+LIMIT 10;  -- Adjust the limit as needed to get the top N products
+
+
+
+5.Database Optimization and Constraints:
+o What indexing strategy would you implement to optimize query performance for
+fetching orders and products?
+o How would you enforce a rule where the total_amount in the Orders table must be
+equal to the sum of the associated products&#39; prices from the Order_Items table?
+
+CREATE INDEX idx_customer_id ON Orders (CustomerID);
+
+CREATE INDEX idx_order_id ON Order_Items (OrderID);
+CREATE INDEX idx_product_id ON Order_Items (ProductID);
+
+CREATE INDEX idx_order_date ON Orders (OrderDate);
+CREATE INDEX idx_order_date ON Orders (OrderDate);
+CREATE INDEX idx_order_date ON Orders (OrderDate);
+CREATE INDEX idx_order_date ON Orders (OrderDate);
+CREATE INDEX idx_customer_order_date ON Orders (CustomerID, OrderDate);
+DELIMITER $$
+
+CREATE TRIGGER enforce_total_amount
+BEFORE INSERT ON Orders
+FOR EACH ROW
+BEGIN
+    DECLARE calculatedTotal DECIMAL(10, 2);
+    
+    SELECT SUM(oi.Quantity * p.Price) INTO calculatedTotal
+    FROM Order_Items oi
+    JOIN Products p ON oi.ProductID = p.ProductID
+    WHERE oi.OrderID = NEW.OrderID;
+
+    IF calculatedTotal <> NEW.TotalAmount THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'TotalAmount must equal the sum of the associated products'' prices.';
+    END IF;
+END $$
+
+DELIMITER ;
+
+
+
+6. Data Relationships:
+o How would you handle a scenario where a product is deleted but exists in previous
+orders? What constraints or policies (like cascading) would you implement?
+o Design a query to calculate the average order value for each customer.
+
+ALTER TABLE Products ADD COLUMN is_deleted BOOLEAN DEFAULT FALSE;
+FOREIGN KEY (ProductID) REFERENCES Products(ProductID) ON DELETE RESTRICT;
+
+SELECT 
+    c.CustomerID,
+    CONCAT(c.FirstName, ' ', c.LastName) AS CustomerName,
+    AVG(o.TotalAmount) AS AverageOrderValue
+FROM 
+    Customers c
+JOIN 
+    Orders o ON c.CustomerID = o.CustomerID
+GROUP BY 
+    c.CustomerID
+ORDER BY 
+    AverageOrderValue DESC; 
+
+
+
+7 Data Integrity:
+o How would you ensure that payment records are only created for valid orders?
+o What mechanism would you use to prevent inserting orders with products that are out
+of stock?
+CREATE TABLE Payments (
+    PaymentID INT AUTO_INCREMENT PRIMARY KEY,
+    OrderID INT NOT NULL,
+    PaymentDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    Amount DECIMAL(10, 2) NOT NULL,
+    Status ENUM('Pending', 'Completed', 'Failed') DEFAULT 'Pending',
+    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID) ON DELETE CASCADE
+);
+CREATE PROCEDURE CreatePayment(IN orderId INT, IN amount DECIMAL(10, 2))
+BEGIN
+    DECLARE orderStatus ENUM('Pending', 'Shipped', 'Delivered', 'Cancelled');
+    
+    SELECT Status INTO orderStatus FROM Orders WHERE OrderID = orderId;
+    
+    IF orderStatus IS NOT NULL AND orderStatus != 'Cancelled' THEN
+        INSERT INTO Payments (OrderID, Amount) VALUES (orderId, amount);
+    ELSE
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid order for payment.';
+    END IF;
+END;
+DELIMITER $$
+
+CREATE TRIGGER check_product_stock
+BEFORE INSERT ON Order_Items
+FOR EACH ROW
+BEGIN
+    DECLARE availableStock INT;
+    
+    SELECT Stock INTO availableStock 
+    FROM Products 
+    WHERE ProductID = NEW.ProductID;
+
+    IF availableStock < NEW.Quantity THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Product is out of stock.';
+    END IF;
+END $$
+
+DELIMITER ;
+
+
+
+9. Error Handling and Transactions:
+o How would you handle a scenario where multiple users are trying to purchase the same
+product, potentially leading to a stock conflict? Implement a transaction in MySQL to
+address this.
+o Write a query to revert an order and update the product stock if a payment fails.
+
+START TRANSACTION;
+
+
+SELECT Stock FROM Products WHERE ProductID = ? FOR UPDATE; 
+
+
+IF Stock >= @requestedQuantity THEN
+    UPDATE Products SET Stock = Stock - @requestedQuantity WHERE ProductID = ?;  
+
+    INSERT INTO Orders (CustomerID, TotalAmount, Status) VALUES (?, ?, 'Pending'); 
+    SET @newOrderID = LAST_INSERT_ID(); 
+
+    INSERT INTO Order_Items (OrderID, ProductID, Quantity) VALUES (@newOrderID, ?, @requestedQuantity); 
+
+    COMMIT;  
+ELSE
+    
+    ROLLBACK;  
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Insufficient stock for the requested product.';
+END IF;
+
+START TRANSACTION;
+
+SELECT oi.ProductID, oi.Quantity
+INTO @productID, @quantity
+FROM Order_Items oi
+JOIN Orders o ON oi.OrderID = o.OrderID
+WHERE o.OrderID = ?; 
+
+
+UPDATE Products 
+SET Stock = Stock + @quantity 
+WHERE ProductID = @productID;
+
+
+UPDATE Orders 
+SET Status = 'Cancelled' 
+WHERE OrderID = ?;  
+COMMIT; 
+
+
+
+
+10. Scaling and Future Enhancements:
+o How would you modify the database to support future requirements like product
+reviews, wishlists, and shopping carts?
+o What strategies would you use to scale the database as the number of customers,
+products, and orders increases?
+
+create database Assingment2;
+use Assingment2;
+CREATE TABLE Reviews (
+    ReviewID INT AUTO_INCREMENT PRIMARY KEY,
+    ProductID INT NOT NULL,
+    CustomerID INT NOT NULL,
+    Rating INT CHECK (Rating BETWEEN 1 AND 5), 
+    Comment TEXT,
+    ReviewDate DATETIME DEFAULT CURRENT_TIMESTAMP
+    
+);
+select * from Reviews;
+CREATE TABLE Wishlists (
+    WishlistID INT AUTO_INCREMENT PRIMARY KEY,
+    CustomerID INT NOT NULL,
+    CreatedDate DATETIME DEFAULT CURRENT_TIMESTAMP
+  
+);
+
+CREATE TABLE Wishlist_Items (
+    WishlistItemID INT AUTO_INCREMENT PRIMARY KEY,
+    WishlistID INT NOT NULL,
+    ProductID INT NOT NULL,
+    FOREIGN KEY (WishlistID) REFERENCES Wishlists(WishlistID)
+    
+);
+CREATE TABLE Carts (
+    CartID INT AUTO_INCREMENT PRIMARY KEY,
+    CustomerID INT NOT NULL,
+    CreatedDate DATETIME DEFAULT CURRENT_TIMESTAMP
+    
+);
+
+CREATE TABLE Cart_Items (
+    CartItemID INT AUTO_INCREMENT PRIMARY KEY,
+    CartID INT NOT NULL,
+    ProductID INT NOT NULL,
+    Quantity INT NOT NULL,
+    FOREIGN KEY (CartID) REFERENCES Carts(CartID)
+   
+);
+mysql> show tables;
++-----------------------+
+| Tables_in_assingment2 |
++-----------------------+
+| cart_items            |
+| carts                 |
+| reviews               |
+| wishlist_items        |
+| wishlists             |
++-----------------------+
+5 rows in set (0.00 sec)
+
+mysql> desc  cart_items;
++------------+------+------+-----+---------+----------------+
+| Field      | Type | Null | Key | Default | Extra          |
++------------+------+------+-----+---------+----------------+
+| CartItemID | int  | NO   | PRI | NULL    | auto_increment |
+| CartID     | int  | NO   | MUL | NULL    |                |
+| ProductID  | int  | NO   |     | NULL    |                |
+| Quantity   | int  | NO   |     | NULL    |                |
++------------+------+------+-----+---------+----------------+
+4 rows in set (0.00 sec)
+
+mysql> desc carts;
++-------------+----------+------+-----+-------------------+-------------------+
+| Field       | Type     | Null | Key | Default           | Extra             |
++-------------+----------+------+-----+-------------------+-------------------+
+| CartID      | int      | NO   | PRI | NULL              | auto_increment    |
+| CustomerID  | int      | NO   |     | NULL              |                   |
+| CreatedDate | datetime | YES  |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
++-------------+----------+------+-----+-------------------+-------------------+
+3 rows in set (0.00 sec)
+
+mysql> desc reviews;
++------------+----------+------+-----+-------------------+-------------------+
+| Field      | Type     | Null | Key | Default           | Extra             |
++------------+----------+------+-----+-------------------+-------------------+
+| ReviewID   | int      | NO   | PRI | NULL              | auto_increment    |
+| ProductID  | int      | NO   |     | NULL              |                   |
+| CustomerID | int      | NO   |     | NULL              |                   |
+| Rating     | int      | YES  |     | NULL              |                   |
+| Comment    | text     | YES  |     | NULL              |                   |
+| ReviewDate | datetime | YES  |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
++------------+----------+------+-----+-------------------+-------------------+
+6 rows in set (0.00 sec)
+
+mysql> desc  wishlist_items;
++----------------+------+------+-----+---------+----------------+
+| Field          | Type | Null | Key | Default | Extra          |
++----------------+------+------+-----+---------+----------------+
+| WishlistItemID | int  | NO   | PRI | NULL    | auto_increment |
+| WishlistID     | int  | NO   | MUL | NULL    |                |
+| ProductID      | int  | NO   |     | NULL    |                |
++----------------+------+------+-----+---------+----------------+
+3 rows in set (0.00 sec)
+
+mysql> desc  wishlists;
++-------------+----------+------+-----+-------------------+-------------------+
+| Field       | Type     | Null | Key | Default           | Extra             |
++-------------+----------+------+-----+-------------------+-------------------+
+| WishlistID  | int      | NO   | PRI | NULL              | auto_increment    |
+| CustomerID  | int      | NO   |     | NULL              |                   |
+| CreatedDate | datetime | YES  |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
++-------------+----------+------+-----+-------------------+-------------------+
+3 rows in set (0.00 sec)
+
+
+
+
+

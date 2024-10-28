@@ -1,0 +1,71 @@
+package student_atendence;
+
+import java.util.Scanner;
+
+public class Atensdents {
+	
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		String[] studentNames = {"Sathish", "Srinivas", "Prudhvi", "Ravi"};
+        int[] daysAttended = {20, 15, 25, 30};  
+        final int TOTAL_CLASS_DAYS = 40;  
+        final double PROMOTION_CRITERIA = 75.0;  
+        generateAttendanceReport(studentNames, daysAttended, TOTAL_CLASS_DAYS, PROMOTION_CRITERIA);
+
+      
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter student index to update attendance (0-3): ");
+        int index = scanner.nextInt();
+        System.out.print("Enter new attendance days: ");
+        int newAttendance = scanner.nextInt();
+
+        updateAttendance(daysAttended, index, newAttendance);
+
+        generateAttendanceReport(studentNames, daysAttended, TOTAL_CLASS_DAYS, PROMOTION_CRITERIA);
+        
+        scanner.close();
+    }
+
+  
+    public static double calculateAttendancePercentage(int attended, int total) {
+        return (attended / (double) total) * 100;
+    }
+
+ 
+    public static void generateAttendanceReport(String[] names, int[] attended, int totalDays, double criteria) {
+        System.out.println("Attendance Report:");
+        for (int i = 0; i < names.length; i++) {
+            double percentage = calculateAttendancePercentage(attended[i], totalDays);
+            String status = percentage >= criteria ? "Meets criteria" : "Does not meet criteria";
+            System.out.printf("Student: %s, Attendance: %.2f%%, Status: %s%n", names[i], percentage, status);
+        }
+    }
+
+
+    public static void updateAttendance(int[] attended, int index, int newAttendance) {
+        if (index >= 0 && index < attended.length) {
+            attended[index] = newAttendance;
+            System.out.println("Attendance updated successfully.");
+        } else {
+            System.out.println("Invalid student index.");
+        }
+		
+	}
+
+}
+out put :
+
+Attendance Report:
+Student: Sathish, Attendance: 50.00%, Status: Does not meet criteria
+Student: Srinivas, Attendance: 37.50%, Status: Does not meet criteria
+Student: Prudhvi, Attendance: 62.50%, Status: Does not meet criteria
+Student: Ravi, Attendance: 75.00%, Status: Meets criteria
+Enter student index to update attendance (0-3): 2
+Enter new attendance days: 60
+Attendance updated successfully.
+Attendance Report:
+Student: Sathish, Attendance: 50.00%, Status: Does not meet criteria
+Student: Srinivas, Attendance: 37.50%, Status: Does not meet criteria
+Student: Prudhvi, Attendance: 150.00%, Status: Meets criteria
+Student: Ravi, Attendance: 75.00%, Status: Meets criteria

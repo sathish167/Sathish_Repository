@@ -1,0 +1,43 @@
+package Binary;
+
+public class Binary_search {
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+	        int[] array = {1,2,3,6,8,9,5};
+	        int target = 3;
+	        int position = binarySearch(array, target);
+	        if (position != -1) {
+	            System.out.println("element found position " + position);
+	        } else {
+	            System.out.println(" element not in the array");
+	        }
+	    }
+
+	    static int binarySearch(int[] array, int target) {
+	        int low = 0;
+	        int high = array.length - 1;
+
+	        while (low <= high) 
+	        {
+	            int mid = (low + high) / 2;
+	            
+	            if (array[mid] == target)
+	            {
+	                return mid;
+	            } 
+	            else if (array[mid] < target)
+	            {
+	                low = mid + 1;
+	            }
+	            else 
+	            {
+	                high = mid - 1;
+	            }
+	        }
+
+	        return -1;
+
+	}
+
+}
